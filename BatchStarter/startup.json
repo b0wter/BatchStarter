@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Command",
+    "command": "notepad.exe",
+    "arguments": "",
+    "posX": 1,
+    "posY": 1,
+    "width": 400,
+    "height": 300
+  },
+  {
+    "name": "Command",
+    "command": "notepad.exe",
+    "arguments": "",
+    "posX": 401,
+    "posY": 1,
+    "width": 400,
+    "height": 300
+  }
+]
