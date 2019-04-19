@@ -2,6 +2,7 @@
 Runs command and arranges windows properly (Windows only).
 
 # How to
+To compile this you need .Net 4.7. Precompiled binaries are available [here](https://github.com/b0wter/BatchStarter/releases).
 You need to specify which commands to run in a json file. Here is an example:
 ```
 [
