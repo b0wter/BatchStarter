@@ -16,12 +16,27 @@ type T = {
     Process: Process option
 }
 
-let fromFile (filename: string) : T list option =
+type ErrorFile = {
+    Name: string
+    Error: string
+}
+
+type FileReadOptions<'a> =
+    | Success of 'a list
+    | NotFound of string
+    | DeserializationError of ErrorFile
+
+let fromFile (filename: string) : FileReadOptions<'a> =
     if filename |> File.Exists then
         let content = filename |> File.ReadAllText
-        Some (Newtonsoft.Json.JsonConvert.DeserializeObject<T list>(content))
+        try
+            let deserialized = (Newtonsoft.Json.JsonConvert.DeserializeObject<'a list>(content))
+            deserialized |> Success
+        with
+            | :? Newtonsoft.Json.JsonException as ex ->
+                { Name = filename; Error = ex.Message } |> DeserializationError
     else
-        None
+        filename |> NotFound
 
 let run (t: T) =
     let startInfo = ProcessStartInfo(t.Command, t.Arguments)

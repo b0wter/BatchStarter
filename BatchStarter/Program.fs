@@ -1,5 +1,6 @@
 ﻿open System.Runtime.InteropServices
 open System
+open Startup
 
 let SWP_NOSIZE = (uint32)0x0001
 let SWP_NOZORDER = (uint32)0x0004
@@ -20,6 +21,17 @@ let SWP_NOZORDER = (uint32)0x0004
 
 let moveWindow = moveAndResizeWindow 0 0
 
+let handleDeserializationErrors (xs: FileReadOptions<Startup.T>) : Startup.T list =
+    match xs with
+    | NotFound f ->
+        do printfn "The file '%s' could not be found." f
+        [ ]
+    | DeserializationError de ->
+        do printfn "The file '%s' could not be deserialized because: %s" de.Name de.Error
+        [ ]
+    | Success items ->
+        items
+
 [<EntryPoint>]
 let main argv = 
 
@@ -29,8 +41,8 @@ let main argv =
     let handles = argv 
                   |> List.ofArray
                   |> List.map (Startup.fromFile) 
-                  |> List.choose id   // filtert die Nones heraus
-                  |> List.collect id  // macht aus list list nur noch list
+                  |> List.map handleDeserializationErrors
+                  |> List.collect id  // list list -> list
                   |> List.map (Startup.run)
 
     // Sleep to make sure the windows actually exist.
