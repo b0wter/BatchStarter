@@ -6,12 +6,12 @@ let SWP_NOSIZE = (uint32)0x0001
 let SWP_NOZORDER = (uint32)0x0004
 
 [<DllImport("user32.dll", SetLastError = true)>]
- extern IntPtr FindWindow(string lpClassName, string lpWindowName)
+extern IntPtr FindWindow(string lpClassName, string lpWindowName)
 
- [<DllImport("user32.dll", SetLastError = true)>]
- extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, UInt32 uFlags)
+[<DllImport("user32.dll", SetLastError = true)>]
+extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, UInt32 uFlags)
 
- let moveAndResizeWindow (newWidth: int) (newHeight: int) (newX: int) (newY: int) (hWnd: IntPtr) : bool =
+let moveAndResizeWindow (newWidth: int) (newHeight: int) (newX: int) (newY: int) (hWnd: IntPtr) : bool =
     let operators = if newWidth = 0 && newHeight = 0 then SWP_NOZORDER ||| SWP_NOSIZE else SWP_NOZORDER
     if hWnd = IntPtr.Zero then
         false
