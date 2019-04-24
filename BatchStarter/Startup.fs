@@ -4,9 +4,10 @@ open System.IO
 open System.Diagnostics
 open System.Diagnostics
 open System
+open System.ComponentModel
 
 type T = {
-    WindowName: string
+    Id: string
     Command: string
     Arguments: string
     PosX: int
@@ -21,24 +22,40 @@ type ErrorFile = {
     Error: string
 }
 
+type ProcessRunResult =
+    | Success of T
+    | Invalid of T
+    | Win32Error of T
+    | PlatformNotSupported of T
+    | AlreadyDisposed of T
+
+
 type FileReadOptions<'a> =
     | Success of 'a list
     | NotFound of string
     | DeserializationError of ErrorFile
 
-let fromFile (filename: string) : FileReadOptions<'a> =
+let fromFile (filename: string) : FileReadOptions<T> =
     if filename |> File.Exists then
         let content = filename |> File.ReadAllText
         try
-            let deserialized = (Newtonsoft.Json.JsonConvert.DeserializeObject<'a list>(content))
-            deserialized |> Success
+            let deserialized = (Newtonsoft.Json.JsonConvert.DeserializeObject<T list>(content))
+            deserialized |> List.mapi (fun i d -> { d with Id = (sprintf "FILE: %s; INDEX: %i" filename i) })
+                         |> Success
         with
             | :? Newtonsoft.Json.JsonException as ex ->
                 { Name = filename; Error = ex.Message } |> DeserializationError
     else
         filename |> NotFound
 
-let run (t: T) =
+let run (t: T) : ProcessRunResult =
     let startInfo = ProcessStartInfo(t.Command, t.Arguments)
-    let proc = Process.Start(startInfo)
-    { t with Process = Some proc }
+    
+    try
+        let proc = Process.Start(startInfo)
+        ProcessRunResult.Success { t with Process = Some proc }
+    with
+        | :? ObjectDisposedException        -> t |> AlreadyDisposed
+        | :? InvalidOperationException      -> t |> Invalid
+        | :? Win32Exception                 -> t |> Win32Error
+        | :? PlatformNotSupportedException  -> t |> PlatformNotSupported

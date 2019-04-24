@@ -32,6 +32,23 @@ let handleDeserializationErrors (xs: FileReadOptions<Startup.T>) : Startup.T lis
     | Success items ->
         items
 
+let handleRunErrors (xs: ProcessRunResult) : Startup.T option =
+    match xs with
+    | ProcessRunResult.Success x -> Some x
+    | Invalid x -> 
+        do printfn "The process with the id '%s' could not be started because no file name was specified or the process is misconfigured (very unlikely!)." (x.Id) 
+        None
+    | Win32Error x -> 
+        do printfn "The process with the id '%s' could not be started because a Win32 error occured. There is no additional information available." (x.Id) 
+        None
+    | AlreadyDisposed x -> 
+        do printfn "The process with the id '%s' could was disposed before it could be started. This is a programming error, you cannot fix it." (x.Id) 
+        None
+    | PlatformNotSupported x -> 
+        do printfn "This platform is not supported."
+        None
+
+
 [<EntryPoint>]
 let main argv = 
 
@@ -44,6 +61,8 @@ let main argv =
                   |> List.map handleDeserializationErrors
                   |> List.collect id  // list list -> list
                   |> List.map (Startup.run)
+                  |> List.map handleRunErrors
+                  |> List.choose id
 
     // Sleep to make sure the windows actually exist.
     do System.Threading.Thread.Sleep(200)
