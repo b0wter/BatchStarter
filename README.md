@@ -7,7 +7,6 @@ You need to specify which commands to run in a json file. Here is an example:
 ```
 [
   {
-    "name": "Command",
     "command": "notepad.exe",
     "arguments": "",
     "posX": 1,
@@ -16,7 +15,6 @@ You need to specify which commands to run in a json file. Here is an example:
     "height": 300
   },
   {
-    "name": "Command",
     "command": "notepad.exe",
     "arguments": "",
     "posX": 401,
@@ -26,10 +24,12 @@ You need to specify which commands to run in a json file. Here is an example:
   }
 ]
 ```
-This will open notepad two times and place the windows (next to each other) in the top left corner of the screen.
+This will open notepad two times and place the windows (next to each other) in the top left corner of the screen. The only field required is _command_.
 
 You need to supply the file to read from as a command line argument.
 ```
 > BatchStarter.exe myConfig.json
 ```
 You can supply as many files as you want.
+
+In case a file cannot be read or a process cannot be started error output will be written to std out. A failing process does not cause a premature exit, all remaining processes will be started.
