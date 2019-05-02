@@ -24,8 +24,8 @@ type ErrorFile = {
 
 type ProcessRunResult =
     | Success of T
-    | Invalid of T
-    | Win32Error of T
+    | Invalid of (T * string)
+    | Win32Error of (T * string)
     | PlatformNotSupported of T
     | AlreadyDisposed of T
 
@@ -55,7 +55,7 @@ let run (t: T) : ProcessRunResult =
         let proc = Process.Start(startInfo)
         ProcessRunResult.Success { t with Process = Some proc }
     with
-        | :? ObjectDisposedException        -> t |> AlreadyDisposed
-        | :? InvalidOperationException      -> t |> Invalid
-        | :? Win32Exception                 -> t |> Win32Error
-        | :? PlatformNotSupportedException  -> t |> PlatformNotSupported
+        | :? ObjectDisposedException         -> t               |> AlreadyDisposed
+        | :? InvalidOperationException as ex -> (t, ex.Message) |> Invalid
+        | :? Win32Exception as ex            -> (t, ex.Message) |> Win32Error
+        | :? PlatformNotSupportedException   -> t               |> PlatformNotSupported

@@ -35,11 +35,11 @@ let handleDeserializationErrors (xs: FileReadOptions<Startup.T>) : Startup.T lis
 let handleRunErrors (xs: ProcessRunResult) : Startup.T option =
     match xs with
     | ProcessRunResult.Success x -> Some x
-    | Invalid x -> 
-        do printfn "The process with the id '%s' could not be started because no file name was specified or the process is misconfigured (very unlikely!)." (x.Id) 
+    | Invalid (x, message) -> 
+        do printfn "The process with the id '%s' could not be started because no file name was specified or the process is misconfigured (very unlikely!). Details:%s%s" (x.Id) (Environment.NewLine) message
         None
-    | Win32Error x -> 
-        do printfn "The process with the id '%s' could not be started because a Win32 error occured. There is no additional information available." (x.Id) 
+    | Win32Error (x, message) -> 
+        do printfn "The process with the id '%s' could not be started because a Win32 error occured. This may happen in some edge cases. Details:%s%s" (x.Id) (Environment.NewLine) message
         None
     | AlreadyDisposed x -> 
         do printfn "The process with the id '%s' could was disposed before it could be started. This is a programming error, you cannot fix it." (x.Id) 
